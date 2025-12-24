@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sun Message - Fixed Palette</title>
+    <title>Sun Message - Center Palette</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
-        /* পুরো স্ক্রিন স্থির রাখার জন্য */
+        /* পুরো পেজটিকে মাঝখানে আনার জন্য */
         html, body { 
             height: 100%; 
             margin: 0; 
             padding: 0; 
-            overflow: hidden; /* পেজ নড়াচড়া বন্ধ */
-            background: #d1d7db; 
+            overflow: hidden; 
+            background: #d1d7db; /* পেজের বাইরের রঙ */
             display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            justify-content: center; /* আড়াআড়ি মাঝখানে */
+            align-items: center; /* ওপর-নিচ মাঝখানে */
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* চ্যাট বক্সের নির্দিষ্ট মাপ */
+        /* চ্যাট বক্সটিকে ছোট এবং মাঝখানে রাখার কন্টেইনার */
         .chat-container { 
-            width: 100%; 
-            max-width: 420px; 
-            height: 90vh; /* স্ক্রিনের ৯০% উচ্চতা */
+            width: 95%; 
+            max-width: 400px; /* বক্সের চওড়া নির্ধারণ */
+            height: 80vh; /* স্ক্রিনের ৮০% উচ্চতা, যাতে ওপর-নিচে খালি থাকে */
             background: #efe7dd; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            border-radius: 15px; 
-            position: relative;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3); 
+            border-radius: 20px; /* চারকোনা গোল করা */
+            overflow: hidden;
+            border: 1px solid #bbb;
         }
 
         header { 
@@ -39,10 +40,9 @@
             padding: 15px; 
             text-align: center; 
             font-weight: bold; 
-            border-radius: 15px 15px 0 0;
+            font-size: 18px;
         }
 
-        /* শুধু মেসেজ এরিয়া স্ক্রল হবে */
         #chat-box { 
             flex: 1; 
             overflow-y: auto; 
@@ -50,28 +50,23 @@
             display: flex; 
             flex-direction: column; 
             gap: 10px; 
-            scrollbar-width: none; /* ফায়ারফক্সের জন্য */
         }
-        #chat-box::-webkit-scrollbar { display: none; } /* ক্রোমের জন্য স্ক্রলবার হাইড */
 
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
+        /* মেসেজ বাবল ডিজাইন */
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; }
         .my-msg { align-self: flex-end; }
         .other-msg { align-self: flex-start; }
         
-        .msg-content { 
-            padding: 8px 12px; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
-            position: relative; 
-        }
-        .my-msg .msg-content { background: #dcf8c6; border-radius: 10px 0px 10px 10px; }
-        .other-msg .msg-content { background: white; border-radius: 0px 10px 10px 10px; }
+        .msg-content { padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
+        .my-msg .msg-content { background: #dcf8c6; border-radius: 12px 0px 12px 12px; }
+        .other-msg .msg-content { background: white; border-radius: 0px 12px 12px 12px; }
 
         .msg-text { font-size: 15px; color: #000; word-wrap: break-word; }
         .msg-info { display: flex; justify-content: flex-end; align-items: center; gap: 5px; margin-top: 4px; }
         .time { font-size: 10px; color: #777; }
         .delete-btn { color: #e53935; font-size: 14px; cursor: pointer; font-weight: bold; }
 
-        /* ইনপুট এরিয়া নিচে ফিক্সড থাকবে */
+        /* ইনপুট এরিয়া ডিজাইন */
         .input-area { 
             background: #f0f0f0; 
             padding: 10px; 
@@ -79,7 +74,6 @@
             gap: 8px; 
             align-items: center; 
             border-top: 1px solid #ddd;
-            border-radius: 0 0 15px 15px;
         }
         input[type="text"] { 
             flex: 1; 
@@ -87,7 +81,7 @@
             border-radius: 25px; 
             border: 1px solid #ccc; 
             outline: none; 
-            font-size: 16px;
+            font-size: 15px;
         }
         button { 
             background: #075e54; 
