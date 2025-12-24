@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>San Chat - Pro Max V6</title>
+    <title>San Chat - Pro Max V7</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
@@ -43,14 +43,14 @@
 
         .reply-box { font-size: 11px; background: rgba(0,0,0,0.05); border-left: 3px solid #00a884; padding: 5px; margin-bottom: 5px; border-radius: 4px; color: #555; }
         .reply-preview { background: #eee; padding: 10px; border-left: 5px solid #00a884; display: none; justify-content: space-between; color: #333; align-items: center; }
-        .reaction-badge { position: absolute; bottom: -8px; right: 8px; background: white; border-radius: 10px; padding: 1px 4px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .reaction-badge { position: absolute; bottom: -8px; right: 8px; background: white; border-radius: 10px; padding: 1px 4px; font-size: 12px; }
         .del-btn { color: red; margin-left: 8px; display: none; font-size: 12px; cursor: pointer; }
         .my-msg:hover .del-btn { display: inline; }
 
         .input-area { background: rgba(0,0,0,0.05); padding: 15px; }
         .input-row { display: flex; gap: 10px; align-items: center; }
         input[type="text"] { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid rgba(0,0,0,0.1); outline: none; background: rgba(255,255,255,0.7); }
-        .bg-picker { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid white; background: #000; }
+        .bg-picker { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid white; }
 
         .room-form { padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
         .room-form input { background: #202c33; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; }
@@ -107,7 +107,7 @@
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98", authDomain: "san-message.firebaseapp.com", projectId: "san-message", appId: "1:156320327886:web:54f780dea6dbce43d0489f" };
+        const firebaseConfig = { apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98", authDomain: "sun-message.firebaseapp.com", projectId: "sun-message", appId: "1:156320327886:web:54f780dea6dbce43d0489f" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         let myId = localStorage.getItem('userId') || 'u' + Date.now();
