@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sun Chat - Pro Max</title>
+    <title>Sun Chat - Final Pro</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
@@ -38,7 +38,6 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: slideUp 0.5s ease-out;
         }
 
-        /* Dynamic Header */
         header { 
             background: rgba(0,0,0,0.15); color: white; padding: 15px; 
             display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; 
@@ -46,7 +45,7 @@
         .header-center { text-align: center; font-weight: bold; font-size: 20px; letter-spacing: 1px; }
         .header-right { text-align: right; display: flex; gap: 15px; justify-content: flex-end; font-size: 20px; cursor: pointer; }
 
-        /* Message Animation */
+        /* Message and Real-time Clock Styling */
         #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: transparent; scroll-behavior: smooth; }
         .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; animation: slideUp 0.3s ease; }
         .my-msg { align-self: flex-end; } .other-msg { align-self: flex-start; }
@@ -54,7 +53,8 @@
         .my-msg .msg-content { background: #dcf8c6; border-bottom-right-radius: 2px; }
         .other-msg .msg-content { background: #ffffff; border-bottom-left-radius: 2px; }
 
-        /* Transparent Footer */
+        .msg-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; font-size: 10px; opacity: 0.6; color: #000; }
+
         .input-area { background: rgba(0,0,0,0.05); padding: 15px; }
         .input-row { display: flex; gap: 12px; align-items: center; }
         input[type="text"] { 
@@ -108,7 +108,6 @@
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98",
             authDomain: "sun-message.firebaseapp.com",
@@ -122,15 +121,12 @@
         
         let currentRoomId = "";
 
-        // URL চেক করার ফাংশন: যদি লিঙ্কে ?room=ID থাকে
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const roomIdFromUrl = urlParams.get('room');
-
             if (roomIdFromUrl) {
-                // যদি লিঙ্কে রুম আইডি থাকে, সাইডবার লুকান
                 document.getElementById('sidebar').style.display = 'none';
-                document.getElementById('close-btn').style.display = 'none'; // ক্লোজ বাটনও বন্ধ
+                document.getElementById('close-btn').style.display = 'none';
                 openRoom(roomIdFromUrl, "Private Chat");
             }
         };
@@ -146,8 +142,11 @@
                 db.collection("active_rooms").doc(id).set({ 
                     displayName: name, creatorId: myId, createdAt: firebase.firestore.FieldValue.serverTimestamp() 
                 }).then(() => {
-                    const shareLink = window.location.href.split('?')[0] + "?room=" + id;
-                    alert("Room Created! Share this link:\n" + shareLink);
+                    const shareLink = window.location.origin + window.location.pathname + "?room=" + id;
+                    const copySuccess = confirm("রুম তৈরি হয়েছে!\n\nলিঙ্ক: " + shareLink + "\n\nলিঙ্কটি কি কপি করতে চান?");
+                    if (copySuccess) {
+                        navigator.clipboard.writeText(shareLink).then(() => alert("লিঙ্ক কপি হয়েছে!"));
+                    }
                 });
             }
         }
@@ -156,16 +155,21 @@
             const list = document.getElementById('room-list'); list.innerHTML = "";
             snap.forEach(doc => {
                 let d = doc.data();
+                const roomUrl = window.location.origin + window.location.pathname + "?room=" + doc.id;
                 let div = document.createElement('div'); div.className = 'room-item';
-                div.innerHTML = `<div onclick="openRoom('${doc.id}', '${d.displayName}')" style="flex:1;"><b>${d.displayName}</b></div><span onclick="deleteRoom('${doc.id}')">🗑️</span>`;
+                div.innerHTML = `
+                    <div onclick="openRoom('${doc.id}', '${d.displayName}')" style="flex:1;"><b>${d.displayName}</b></div>
+                    <div style="display:flex; gap:10px;">
+                        <span onclick="navigator.clipboard.writeText('${roomUrl}'); alert('লিঙ্ক কপি হয়েছে!');">🔗</span>
+                        <span onclick="deleteRoom('${doc.id}')">🗑️</span>
+                    </div>`;
                 list.appendChild(div);
             });
         });
 
         function openRoom(id, name) {
             currentRoomId = id; 
-            const chatContainer = document.getElementById('main-chat');
-            chatContainer.style.display = 'flex';
+            document.getElementById('main-chat').style.display = 'flex';
             document.getElementById('current-room-name').innerText = name;
             loadMsgs();
         }
@@ -185,8 +189,9 @@
                 let box = document.getElementById('chat-box'); box.innerHTML = "";
                 snap.forEach(doc => {
                     let d = doc.data(); let isMe = d.senderId === myId;
+                    let time = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
                     let wrap = document.createElement('div'); wrap.className = `msg-wrapper ${isMe?'my-msg':'other-msg'}`;
-                    wrap.innerHTML = `<div class="msg-content">${d.text}<div class="msg-meta">✓✓</div></div>`;
+                    wrap.innerHTML = `<div class="msg-content">${d.text}<div class="msg-meta">${time} ✓✓</div></div>`;
                     box.appendChild(wrap);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -199,7 +204,7 @@
             let c = document.getElementById('main-chat'); 
             c.style.height = (c.offsetHeight > 60) ? '55px' : '600px';
         }
-        function popOut() { window.open(window.location.href + "?room=" + currentRoomId, 'ChatWin', 'width=420,height=600'); }
+        function popOut() { window.open(window.location.origin + window.location.pathname + "?room=" + currentRoomId, 'ChatWin', 'width=420,height=600'); }
     </script>
 </body>
 </html>
