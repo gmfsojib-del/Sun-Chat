@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sun Chat - Ultimate</title>
+    <title>Sun Chat - Master Delete</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
@@ -15,7 +15,6 @@
         .sidebar-header { padding: 15px; color: #aebac1; font-weight: bold; border-bottom: 1px solid #374045; }
         .room-list { flex: 1; overflow-y: auto; padding: 10px; }
         
-        /* Room Item with Delete Icon */
         .room-item { 
             padding: 12px; cursor: pointer; color: #e9edef; border-radius: 8px; 
             margin-bottom: 8px; background: #202c33; border: 1px solid #374045; 
@@ -26,48 +25,29 @@
         .room-name-text { font-weight: bold; font-size: 14px; }
         .room-id-text { font-size: 11px; color: #8696a0; }
         
-        /* Delete Room Button (🗑️) */
-        .delete-room-btn { 
-            color: #ff5252; font-size: 18px; cursor: pointer; padding: 5px; 
-            border-radius: 5px; transition: 0.2s; 
-        }
-        .delete-room-btn:hover { background: rgba(255, 82, 82, 0.1); }
+        /* Delete Icon */
+        .delete-room-btn { color: #ff5252; font-size: 18px; cursor: pointer; padding: 5px; }
 
         /* Chat Container */
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; }
-        .chat-container { 
-            width: 420px; height: 550px; background: #efe7dd; 
-            display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
-            border-radius: 12px; overflow: hidden;
-        }
+        .chat-container { width: 420px; height: 550px; background: #efe7dd; display: none; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
 
-        /* Header Layout */
-        header { 
-            background: #075e54; color: white; padding: 10px 15px; 
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .header-left { flex: 1; font-size: 13px; opacity: 0.9; }
-        .header-center { flex: 2; text-align: center; font-weight: bold; font-size: 18px; }
-        .header-right { flex: 1; text-align: right; }
+        header { background: #075e54; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
         .controls span { cursor: pointer; margin-left: 12px; font-size: 18px; font-weight: bold; }
 
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        
-        /* Message Bubbles & Delete Button (×) */
         .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
         .my-msg { align-self: flex-end; }
         .other-msg { align-self: flex-start; }
-        .msg-content { padding: 8px 12px; border-radius: 10px; font-size: 14px; position: relative; display: flex; align-items: center; }
+        .msg-content { padding: 8px 12px; border-radius: 10px; font-size: 14px; position: relative; }
         .my-msg .msg-content { background: #dcf8c6; }
         .other-msg .msg-content { background: white; }
-        .del-msg-btn { color: #ea0038; cursor: pointer; font-size: 16px; margin-left: 8px; font-weight: bold; opacity: 0.5; }
-        .del-msg-btn:hover { opacity: 1; }
+        .del-msg-btn { color: #ea0038; cursor: pointer; font-size: 14px; margin-left: 8px; font-weight: bold; }
 
         .input-area { background: #f0f0f0; padding: 12px; display: flex; gap: 10px; }
         input[type="text"] { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
         .send-btn { background: #075e54; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
 
-        /* Create Room Form */
         .room-form { padding: 15px; border-top: 1px solid #374045; display: flex; flex-direction: column; gap: 8px; }
         .room-form input { background: #2a3942; border: none; color: white; padding: 10px; border-radius: 5px; }
         .room-form button { background: #00a884; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -78,9 +58,8 @@
     <div class="sidebar">
         <div class="sidebar-header">Rooms</div>
         <div class="room-list" id="room-list"></div>
-        
         <div class="room-form">
-            <input type="text" id="new-room-id" placeholder="Room ID (Required)">
+            <input type="text" id="new-room-id" placeholder="Room ID">
             <input type="text" id="new-room-name" placeholder="Friend's Name">
             <button onclick="createRoom()">Create Room</button>
         </div>
@@ -89,14 +68,12 @@
     <div class="main-content">
         <div class="chat-container" id="main-chat">
             <header>
-                <div class="header-left" id="current-room-name">Select</div>
-                <div class="header-center">Sun Chat</div>
-                <div class="header-right">
-                    <div class="controls">
-                        <span onclick="popOut()">❐</span>
-                        <span onclick="minimizeChat()">−</span>
-                        <span onclick="closeChat()">×</span>
-                    </div>
+                <div id="current-room-name" style="font-size: 13px;">Select</div>
+                <div style="font-weight: bold; font-size: 18px;">Sun Chat</div>
+                <div class="controls">
+                    <span onclick="popOut()">❐</span>
+                    <span onclick="minimizeChat()">−</span>
+                    <span onclick="closeChat()">×</span>
                 </div>
             </header>
             <div id="chat-box"></div>
@@ -108,7 +85,6 @@
     </div>
 
     <script>
-        // আপনার সঠিক ফায়ারবেস কনফিগ
         const firebaseConfig = {
             apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98",
             authDomain: "sun-message.firebaseapp.com",
@@ -123,50 +99,45 @@
         localStorage.setItem('userId', myId);
         let currentRoomId = "";
 
-        // ১. রুম তৈরি করা (Creator ID সহ)
         function createRoom() {
             const id = document.getElementById('new-room-id').value.trim();
             const name = document.getElementById('new-room-name').value.trim();
             if(id && name) {
                 db.collection("active_rooms").doc(id).set({
                     displayName: name,
-                    creatorId: myId,
+                    creatorId: myId, // Creator ID set করা হচ্ছে
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    document.getElementById('new-room-id').value = "";
-                    document.getElementById('new-room-name').value = "";
                 });
+                document.getElementById('new-room-id').value = "";
+                document.getElementById('new-room-name').value = "";
             }
         }
 
-        // ২. পুরো রুম ডিলিট করার ফাংশন (Sidebar Button)
+        // মাস্টার ডিলিট ফাংশন (সব রুম ডিলিট করতে পারবে)
         function deleteRoom(roomId) {
-            if(confirm("Delete this entire room and all messages?")) {
+            if(confirm("Delete this entire room?")) {
                 db.collection("active_rooms").doc(roomId).delete().then(() => {
                     if (currentRoomId === roomId) closeChat();
                 });
             }
         }
 
-        // ৩. রুম লিস্ট লোড করা
         db.collection("active_rooms").orderBy("createdAt", "desc").onSnapshot(snap => {
             const list = document.getElementById('room-list'); list.innerHTML = "";
             snap.forEach(doc => {
                 const data = doc.data();
-                const isCreator = data.creatorId === myId;
                 let div = document.createElement('div'); div.className = 'room-item';
                 div.innerHTML = `
-                    <div class="room-info" onclick="openRoom('${doc.id}', '${data.displayName}')">
+                    <div class="room-info" onclick="openRoom('${doc.id}', '${data.displayName || doc.id}')">
                         <span class="room-name-text">${data.displayName || doc.id}</span>
                         <span class="room-id-text">ID: ${doc.id}</span>
                     </div>
-                    ${isCreator ? `<span class="delete-room-btn" onclick="deleteRoom('${doc.id}')">🗑️</span>` : ''}
+                    <span class="delete-room-btn" onclick="deleteRoom('${doc.id}')">🗑️</span>
                 `;
                 list.appendChild(div);
             });
         });
 
-        // ৪. চ্যাট বক্স ওপেন করা
         function openRoom(id, name) {
             currentRoomId = id;
             document.getElementById('main-chat').style.display = 'flex';
@@ -175,13 +146,11 @@
         }
 
         function closeChat() { document.getElementById('main-chat').style.display = 'none'; currentRoomId = ""; }
-        
         function minimizeChat() { 
             let c = document.getElementById('main-chat');
             c.style.height = (c.offsetHeight > 50) ? '45px' : '550px';
         }
 
-        // ৫. মেসেজ পাঠানো
         function sendMsg() {
             let t = document.getElementById('msg-input').value;
             if(t && currentRoomId) {
@@ -192,14 +161,10 @@
             }
         }
 
-        // ৬. মেসেজ ডিলিট করা
         function deleteMsg(msgId) {
-            if(confirm("Delete message?")) {
-                db.collection("chats").doc(currentRoomId).collection("messages").doc(msgId).delete();
-            }
+            if(confirm("Delete message?")) db.collection("chats").doc(currentRoomId).collection("messages").doc(msgId).delete();
         }
 
-        // ৭. মেসেজ লোড করা
         function loadMsgs() {
             if(!currentRoomId) return;
             db.collection("chats").doc(currentRoomId).collection("messages").orderBy("createdAt").onSnapshot(snap => {
@@ -207,11 +172,7 @@
                 snap.forEach(doc => {
                     let d = doc.data(); let isMe = d.senderId === myId;
                     let wrap = document.createElement('div'); wrap.className = `msg-wrapper ${isMe?'my-msg':'other-msg'}`;
-                    wrap.innerHTML = `
-                        <div class="msg-content">
-                            ${d.text} 
-                            ${isMe ? `<span class="del-msg-btn" onclick="deleteMsg('${doc.id}')">×</span>` : ''}
-                        </div>`;
+                    wrap.innerHTML = `<div class="msg-content">${d.text} ${isMe ? `<span class="del-msg-btn" onclick="deleteMsg('${doc.id}')">×</span>` : ''}</div>`;
                     box.appendChild(wrap);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -219,8 +180,7 @@
         }
 
         function popOut() {
-            if (!currentRoomId) return;
-            window.open(window.location.href, 'ChatWin', 'width=420,height=550');
+            if (currentRoomId) window.open(window.location.href, 'ChatWin', 'width=420,height=550');
         }
     </script>
 </body>
