@@ -3,113 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sun Chat - Master Pro</title>
+    <title>Sun Chat - Pro Max</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --bg-body: #202c33; --bg-side: #111b21; --txt-main: #e9edef;
-            --border: #374045; --chat-bg: #efe7dd; --msg-me: #dcf8c6; --msg-other: #ffffff;
+            --bg-body: #0f171c; --bg-side: #111b21; --txt-main: #e9edef;
+            --border: #374045; --chat-bg: #efe7dd;
         }
-        .light-mode {
-            --bg-body: #f0f2f5; --bg-side: #ffffff; --txt-main: #111b21;
-            --border: #e9edef; --chat-bg: #e5ddd5; --msg-me: #d9fdd3; --msg-other: #ffffff;
-        }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; transition: all 0.3s ease; }
         body { margin: 0; background: var(--bg-body); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
 
+        /* Sidebar Styling */
         .sidebar { width: 300px; background: var(--bg-side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; color: #aebac1; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header { padding: 15px; color: #aebac1; font-weight: bold; border-bottom: 1px solid var(--border); }
         .room-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .room-item { padding: 12px; cursor: pointer; color: var(--txt-main); border-radius: 8px; margin-bottom: 8px; background: var(--bg-body); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        
-        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; }
-        .chat-container { width: 420px; height: 580px; background: var(--chat-bg); display: none; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        
+        .room-item { 
+            padding: 12px; cursor: pointer; color: var(--txt-main); border-radius: 8px; 
+            margin-bottom: 8px; background: #202c33; border: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .room-item:hover { transform: scale(1.02); background: #2a3942; }
+
+        /* Animation for Chat Container */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        .chat-container { 
+            width: 420px; height: 600px; background: var(--chat-bg); display: none; 
+            flex-direction: column; border-radius: 15px; overflow: hidden; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: slideUp 0.5s ease-out;
+        }
+
+        /* Dynamic Header */
         header { 
-            background: #075e54; color: white; padding: 10px 15px; 
+            background: rgba(0,0,0,0.15); color: white; padding: 15px; 
             display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; 
         }
-        .header-left { font-size: 12px; }
-        .header-center { text-align: center; font-weight: bold; font-size: 18px; }
-        .header-right { text-align: right; display: flex; gap: 12px; justify-content: flex-end; font-weight: bold; font-size: 18px; }
-        .header-right span { cursor: pointer; }
-        
-        #typing-status { font-size: 10px; color: #ffd700; height: 12px; }
+        .header-center { text-align: center; font-weight: bold; font-size: 20px; letter-spacing: 1px; }
+        .header-right { text-align: right; display: flex; gap: 15px; justify-content: flex-end; font-size: 20px; cursor: pointer; }
 
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: transparent; }
-        
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
+        /* Message Animation */
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: transparent; scroll-behavior: smooth; }
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; animation: slideUp 0.3s ease; }
         .my-msg { align-self: flex-end; } .other-msg { align-self: flex-start; }
-        .msg-content { padding: 8px 12px; border-radius: 10px; font-size: 14px; position: relative; color: #000; }
-        .my-msg .msg-content { background: var(--msg-me); } .other-msg .msg-content { background: var(--msg-other); }
+        .msg-content { padding: 10px 15px; border-radius: 12px; font-size: 14px; position: relative; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .my-msg .msg-content { background: #dcf8c6; border-bottom-right-radius: 2px; }
+        .other-msg .msg-content { background: #ffffff; border-bottom-left-radius: 2px; }
 
-        .msg-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; }
-        .time-text { font-size: 9px; opacity: 0.6; }
-        .tick-mark { font-size: 11px; color: #53bdeb; }
-
-        /* নিচের সাদা কালারটা চেঞ্জ করা হয়েছে */
-        .input-area { background: transparent; padding: 15px; display: flex; flex-direction: column; }
-        .input-row { display: flex; gap: 8px; align-items: center; }
-        
-        /* টাইপ করার বক্সের ব্যাকগ্রাউন্ড স্বচ্ছ করা হয়েছে */
+        /* Transparent Footer */
+        .input-area { background: rgba(0,0,0,0.05); padding: 15px; }
+        .input-row { display: flex; gap: 12px; align-items: center; }
         input[type="text"] { 
-            flex: 1; padding: 10px 15px; border-radius: 20px; 
-            border: 1px solid rgba(0,0,0,0.2); outline: none; 
-            background: rgba(255,255,255,0.4); color: #000;
+            flex: 1; padding: 12px 18px; border-radius: 25px; 
+            border: 1px solid rgba(0,0,0,0.1); outline: none; 
+            background: rgba(255,255,255,0.7); font-size: 15px;
         }
-        
-        .bg-picker { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; padding: 0; background: #000; overflow: hidden; }
+        .bg-picker { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid white; background: #000; }
 
-        .room-form { padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
-        .room-form input { background: var(--bg-body); border: none; color: var(--txt-main); padding: 8px; border-radius: 5px; }
+        .room-form { padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        .room-form input { background: #202c33; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-header">Sun Chat <span onclick="document.body.classList.toggle('light-mode')" style="cursor:pointer;">🌓</span></div>
-        <div style="padding:10px;"><input type="text" id="search-input" placeholder="Search..." oninput="filterRooms()" style="width:100%; padding:8px; border-radius:5px; border:none; background:#202c33; color:white;"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">Sun Chat Rooms</div>
         <div class="room-list" id="room-list"></div>
         <div class="room-form">
-            <input type="text" id="new-room-id" placeholder="Room ID">
+            <input type="text" id="new-room-id" placeholder="Room ID (e.g. funny-chat)">
             <input type="text" id="new-room-name" placeholder="Friend's Name">
-            <button onclick="createRoom()" style="background:#00a884; color:white; border:none; padding:8px; cursor:pointer; font-weight:bold; border-radius:5px;">Create Room</button>
+            <button onclick="createRoom()" style="background:#00a884; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold; border-radius:8px;">Create Private Room</button>
         </div>
     </div>
 
     <div class="main-content">
         <div class="chat-container" id="main-chat">
-            <header>
+            <header id="chat-header">
                 <div class="header-left">
                     <div id="current-room-name" style="font-weight:bold;">...</div>
-                    <div id="typing-status"></div>
+                    <div id="typing-status" style="font-size:10px; color:#ffd700;"></div>
                 </div>
                 <div class="header-center">Sun Chat</div>
                 <div class="header-right">
-                    <span title="Minimize" onclick="minimizeChat()">−</span>
-                    <span title="Pop-out" onclick="popOut()">❐</span>
-                    <span title="Close" onclick="closeChat()">×</span>
+                    <span onclick="minimizeChat()">−</span>
+                    <span onclick="popOut()">❐</span>
+                    <span onclick="closeChat()" id="close-btn">×</span>
                 </div>
             </header>
             
             <div id="chat-box"></div>
 
             <div class="input-area">
-                <div id="reply-box" style="background:rgba(0,0,0,0.1); padding:5px 10px; border-left:4px solid #075e54; font-size:12px; display:none; justify-content:space-between; border-radius:5px; margin-bottom:5px;">
-                    <span id="reply-text"></span>
-                    <span onclick="cancelReply()" style="cursor:pointer; font-weight:bold;">×</span>
-                </div>
                 <div class="input-row">
-                    <input type="color" class="bg-picker" id="bg-color" value="#efe7dd" oninput="changeBg(this.value)" title="Change Chat Color">
-                    <input type="text" id="msg-input" placeholder="Type a message..." oninput="handleTyping()" onkeypress="if(event.key === 'Enter') sendMsg()">
-                    <button onclick="sendMsg()" style="background:none; border:none; font-size:24px; cursor:pointer;">➤</button>
+                    <input type="color" class="bg-picker" id="bg-color" value="#efe7dd" oninput="changeTheme(this.value)">
+                    <input type="text" id="msg-input" placeholder="Write something..." onkeypress="if(event.key === 'Enter') sendMsg()">
+                    <button onclick="sendMsg()" style="background:none; border:none; font-size:28px; cursor:pointer;">➤</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98",
             authDomain: "sun-message.firebaseapp.com",
@@ -120,19 +119,37 @@
         const db = firebase.firestore();
         let myId = localStorage.getItem('userId') || 'u' + Date.now();
         localStorage.setItem('userId', myId);
-        let currentRoomId = "", replyMsg = null, typingTimeout;
+        
+        let currentRoomId = "";
 
-        const sendSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37.mp3');
-        const receiveSound = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
+        // URL চেক করার ফাংশন: যদি লিঙ্কে ?room=ID থাকে
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomIdFromUrl = urlParams.get('room');
 
-        function changeBg(color) { 
+            if (roomIdFromUrl) {
+                // যদি লিঙ্কে রুম আইডি থাকে, সাইডবার লুকান
+                document.getElementById('sidebar').style.display = 'none';
+                document.getElementById('close-btn').style.display = 'none'; // ক্লোজ বাটনও বন্ধ
+                openRoom(roomIdFromUrl, "Private Chat");
+            }
+        };
+
+        function changeTheme(color) { 
             document.getElementById('main-chat').style.backgroundColor = color;
         }
 
         function createRoom() {
             const id = document.getElementById('new-room-id').value.trim();
             const name = document.getElementById('new-room-name').value.trim();
-            if(id && name) db.collection("active_rooms").doc(id).set({ displayName: name, creatorId: myId, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            if(id && name) {
+                db.collection("active_rooms").doc(id).set({ 
+                    displayName: name, creatorId: myId, createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                }).then(() => {
+                    const shareLink = window.location.href.split('?')[0] + "?room=" + id;
+                    alert("Room Created! Share this link:\n" + shareLink);
+                });
+            }
         }
 
         db.collection("active_rooms").orderBy("createdAt", "desc").onSnapshot(snap => {
@@ -140,82 +157,49 @@
             snap.forEach(doc => {
                 let d = doc.data();
                 let div = document.createElement('div'); div.className = 'room-item';
-                div.innerHTML = `<div onclick="openRoom('${doc.id}', '${d.displayName}')" style="flex:1;"><b>${d.displayName}</b><br><small>ID: ${doc.id}</small></div><span onclick="deleteRoom('${doc.id}')" style="cursor:pointer;">🗑️</span>`;
+                div.innerHTML = `<div onclick="openRoom('${doc.id}', '${d.displayName}')" style="flex:1;"><b>${d.displayName}</b></div><span onclick="deleteRoom('${doc.id}')">🗑️</span>`;
                 list.appendChild(div);
             });
         });
 
         function openRoom(id, name) {
-            currentRoomId = id; document.getElementById('main-chat').style.display = 'flex';
+            currentRoomId = id; 
+            const chatContainer = document.getElementById('main-chat');
+            chatContainer.style.display = 'flex';
             document.getElementById('current-room-name').innerText = name;
-            loadMsgs(); listenTyping();
-        }
-
-        function handleTyping() {
-            db.collection("typing").doc(currentRoomId).set({ [myId]: true });
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { db.collection("typing").doc(currentRoomId).set({ [myId]: false }); }, 2000);
-        }
-
-        function listenTyping() {
-            db.collection("typing").doc(currentRoomId).onSnapshot(doc => {
-                let data = doc.data(); let isTyping = false;
-                if(data) { for(let id in data) { if(id !== myId && data[id] === true) isTyping = true; } }
-                document.getElementById('typing-status').innerText = isTyping ? "Typing..." : "";
-            });
+            loadMsgs();
         }
 
         function sendMsg() {
             let t = document.getElementById('msg-input').value;
             if(t && currentRoomId) {
                 db.collection("chats").doc(currentRoomId).collection("messages").add({
-                    text: t, senderId: myId, replyTo: replyMsg, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    text: t, senderId: myId, createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                sendSound.play(); document.getElementById('msg-input').value = ""; cancelReply();
+                document.getElementById('msg-input').value = "";
             }
         }
 
         function loadMsgs() {
             db.collection("chats").doc(currentRoomId).collection("messages").orderBy("createdAt").onSnapshot(snap => {
-                let box = document.getElementById('chat-box'); let lastCount = box.children.length;
-                box.innerHTML = "";
+                let box = document.getElementById('chat-box'); box.innerHTML = "";
                 snap.forEach(doc => {
                     let d = doc.data(); let isMe = d.senderId === myId;
-                    let time = d.createdAt ? d.createdAt.toDate().getHours() + ":" + (d.createdAt.toDate().getMinutes() < 10 ? '0' : '') + d.createdAt.toDate().getMinutes() : "";
-                    
                     let wrap = document.createElement('div'); wrap.className = `msg-wrapper ${isMe?'my-msg':'other-msg'}`;
-                    wrap.innerHTML = `<div class="msg-content" onclick="setReply('${d.text}')">
-                        ${d.replyTo ? `<div style="font-size:11px; opacity:0.7; border-left:2px solid #075e54; padding-left:5px; margin-bottom:4px;">${d.replyTo}</div>` : ''}
-                        ${d.text}
-                        <div class="msg-meta">
-                            <span class="time-text">${time}</span>
-                            ${isMe ? `<span class="tick-mark">✓✓</span> <span onclick="deleteMsg('${doc.id}')" style="color:red; margin-left:5px;">×</span>` : ''}
-                        </div>
-                    </div>`;
+                    wrap.innerHTML = `<div class="msg-content">${d.text}<div class="msg-meta">✓✓</div></div>`;
                     box.appendChild(wrap);
                 });
-                if(box.children.length > lastCount && lastCount !== 0) receiveSound.play();
                 box.scrollTop = box.scrollHeight;
             });
         }
 
-        function setReply(text) {
-            replyMsg = text; document.getElementById('reply-box').style.display = 'flex';
-            document.getElementById('reply-text').innerText = text;
-        }
-        function cancelReply() { replyMsg = null; document.getElementById('reply-box').style.display = 'none'; }
-        function deleteRoom(id) { if(confirm("Delete room?")) db.collection("active_rooms").doc(id).delete(); }
-        function deleteMsg(id) { if(confirm("Delete message?")) db.collection("chats").doc(currentRoomId).collection("messages").doc(id).delete(); }
+        function deleteRoom(id) { if(confirm("Delete?")) db.collection("active_rooms").doc(id).delete(); }
         function closeChat() { document.getElementById('main-chat').style.display = 'none'; }
         function minimizeChat() { 
             let c = document.getElementById('main-chat'); 
-            c.style.height = (c.offsetHeight > 50) ? '45px' : '580px';
+            c.style.height = (c.offsetHeight > 60) ? '55px' : '600px';
         }
-        function popOut() { window.open(window.location.href, 'ChatWin', 'width=420,height=580'); }
-        function filterRooms() {
-            let q = document.getElementById('search-input').value.toLowerCase();
-            document.querySelectorAll('.room-item').forEach(i => i.style.display = i.innerText.toLowerCase().includes(q) ? 'flex' : 'none');
-        }
+        function popOut() { window.open(window.location.href + "?room=" + currentRoomId, 'ChatWin', 'width=420,height=600'); }
     </script>
 </body>
 </html>
