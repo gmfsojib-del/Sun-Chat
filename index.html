@@ -3,121 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sun Message - PopUp Style</title>
+    <title>Sun Message - Private Chat</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
-        /* পুরো স্ক্রিন স্থির এবং ব্যাকগ্রাউন্ড সেটআপ */
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            background: #202c33; /* ডার্ক ব্যাকগ্রাউন্ড জেনো পপ-আপটি ফুটে ওঠে */
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #202c33; display: flex; justify-content: center; align-items: center; font-family: 'Segoe UI', sans-serif; }
+        
+        /* লগইন বক্স */
+        #login-screen { position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: white; padding: 30px; border-radius: 15px; text-align: center; width: 300px; }
+        .login-box input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+        .login-box button { background: #075e54; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
 
-        /* পপ-আপ বক্স - মটা এবং মাঝখানে */
-        .chat-container { 
-            width: 90%; 
-            max-width: 550px; /* এখানে চওড়া বাড়ানো হয়েছে (মটা করা হয়েছে) */
-            height: 500px; /* উচ্চতা কমানো হয়েছে যাতে পপ-আপ মনে হয় */
-            background: #efe7dd; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
-            border-radius: 20px; 
-            overflow: hidden;
-            border: 1px solid #444;
-            animation: popup 0.3s ease-out; /* খোলার সময় এনিমেশন হবে */
-        }
-
-        @keyframes popup {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        header { 
-            background: #075e54; 
-            color: white; 
-            padding: 15px; 
-            text-align: center; 
-            font-weight: bold; 
-            font-size: 20px;
-            letter-spacing: 1px;
-        }
-
-        #chat-box { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-
-        /* মেসেজ ডিজাইন */
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 70%; }
+        /* চ্যাট কন্টেইনার */
+        .chat-container { width: 90%; max-width: 550px; height: 550px; background: #efe7dd; display: none; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border-radius: 20px; overflow: hidden; border: 1px solid #444; }
+        header { background: #075e54; color: white; padding: 15px; text-align: center; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; }
         .my-msg { align-self: flex-end; }
         .other-msg { align-self: flex-start; }
         
-        .msg-content { padding: 10px 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; }
-        .my-msg .msg-content { background: #dcf8c6; border-radius: 15px 0px 15px 15px; }
-        .other-msg .msg-content { background: white; border-radius: 0px 15px 15px 15px; }
+        .msg-content { padding: 8px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
+        .my-msg .msg-content { background: #dcf8c6; border-radius: 12px 0 12px 12px; }
+        .other-msg .msg-content { background: white; border-radius: 0 12px 12px 12px; }
+        
+        .sender-name { font-size: 11px; font-weight: bold; color: #075e54; margin-bottom: 2px; }
+        .msg-text { font-size: 15px; }
+        .time { font-size: 10px; color: #888; text-align: right; margin-top: 4px; }
 
-        .msg-text { font-size: 15px; color: #000; word-wrap: break-word; line-height: 1.4; }
-        .msg-info { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 5px; }
-        .time { font-size: 10px; color: #888; }
-        .delete-btn { color: #ff5252; font-size: 16px; cursor: pointer; font-weight: bold; text-decoration: none; }
-
-        /* ইনপুট এরিয়া */
-        .input-area { 
-            background: #f0f0f0; 
-            padding: 15px; 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            border-top: 1px solid #ddd;
-        }
-        input[type="text"] { 
-            flex: 1; 
-            padding: 12px 18px; 
-            border-radius: 30px; 
-            border: 1px solid #ccc; 
-            outline: none; 
-            font-size: 15px;
-        }
-        button { 
-            background: #075e54; 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 45px; 
-            height: 45px; 
-            cursor: pointer; 
-            font-size: 20px;
-            transition: 0.2s;
-        }
-        button:hover { background: #128c7e; transform: scale(1.05); }
+        .input-area { background: #f0f0f0; padding: 15px; display: flex; gap: 10px; align-items: center; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ccc; outline: none; }
+        button#send-btn { background: #075e54; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <header>Sun Message</header>
-        <div id="chat-box"></div>
+    <div id="login-screen">
+        <div class="login-box">
+            <h3>Sun Message</h3>
+            <input type="text" id="user-name" placeholder="আপনার নাম লিখুন">
+            <input type="text" id="room-id" placeholder="রুম আইডি (যেমন: 123)">
+            <p style="font-size: 11px; color: #666;">একই রুম আইডি ব্যবহারকারীরা একসাথে চ্যাট করতে পারবে।</p>
+            <button onclick="startChat()">চ্যাট শুরু করুন</button>
+        </div>
+    </div>
 
+    <div class="chat-container" id="main-chat">
+        <header id="chat-header">Sun Message</header>
+        <div id="chat-box"></div>
         <div class="input-area">
-            <input type="text" id="message" placeholder="মেসেজ লিখুন..." onkeypress="if(event.key === 'Enter') sendMsg()">
-            <button onclick="sendMsg()">➤</button>
+            <input type="text" id="message-input" placeholder="মেসেজ লিখুন..." onkeypress="if(event.key === 'Enter') sendMsg()">
+            <button id="send-btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
 
     <script>
-        // আপনার ফায়ারবেস কনফিগ
+        // আপনার সঠিক ফায়ারবেস কনফিগ
         const firebaseConfig = {
             apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98",
             authDomain: "sun-message.firebaseapp.com",
@@ -129,51 +71,64 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const myId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
+        
+        let userName = "";
+        let roomId = "";
+        let myId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('userId', myId);
 
+        function startChat() {
+            userName = document.getElementById('user-name').value.trim();
+            roomId = document.getElementById('room-id').value.trim();
+
+            if (userName && roomId) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-chat').style.display = 'flex';
+                document.getElementById('chat-header').innerText = "রুম: " + roomId;
+                loadMessages();
+            } else {
+                alert("নাম এবং রুম আইডি দিন!");
+            }
+        }
+
         function sendMsg() {
-            const msgInput = document.getElementById('message');
+            const msgInput = document.getElementById('message-input');
             const text = msgInput.value.trim();
             if (text !== "") {
-                db.collection("messages").add({
+                db.collection("chats").doc(roomId).collection("messages").add({
                     text: text,
+                    senderName: userName,
                     senderId: myId,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => { msgInput.value = ""; });
+                });
+                msgInput.value = "";
             }
         }
 
-        function deleteMsg(id) {
-            if(confirm("মেসেজটি ডিলিট করতে চান?")) {
-                db.collection("messages").doc(id).delete();
-            }
-        }
-
-        db.collection("messages").orderBy("createdAt", "asc").onSnapshot((snapshot) => {
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = "";
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const id = doc.id;
-                const isMe = data.senderId === myId;
-                const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "...";
-                
-                const wrapper = document.createElement("div");
-                wrapper.className = `msg-wrapper ${isMe ? 'my-msg' : 'other-msg'}`;
-                wrapper.innerHTML = `
-                    <div class="msg-content">
-                        <div class="msg-text">${data.text}</div>
-                        <div class="msg-info">
-                            <span class="time">${time}</span>
-                            ${isMe ? `<span class="delete-btn" onclick="deleteMsg('${id}')">×</span>` : ''}
+        function loadMessages() {
+            db.collection("chats").doc(roomId).collection("messages").orderBy("createdAt", "asc")
+            .onSnapshot((snapshot) => {
+                const chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.senderId === myId;
+                    const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "...";
+                    
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `msg-wrapper ${isMe ? 'my-msg' : 'other-msg'}`;
+                    wrapper.innerHTML = `
+                        <div class="msg-content">
+                            ${!isMe ? `<div class="sender-name">${data.senderName}</div>` : ''}
+                            <div class="msg-text">${data.text}</div>
+                            <div class="time">${time}</div>
                         </div>
-                    </div>
-                `;
-                chatBox.appendChild(wrapper);
+                    `;
+                    chatBox.appendChild(wrapper);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
             });
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
+        }
     </script>
 </body>
 </html>
