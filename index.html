@@ -18,13 +18,11 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--bg-body); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
 
-        /* Sidebar */
         .sidebar { width: 300px; background: var(--bg-side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
         .sidebar-header { padding: 15px; color: #aebac1; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .room-list { flex: 1; overflow-y: auto; padding: 10px; }
         .room-item { padding: 12px; cursor: pointer; color: var(--txt-main); border-radius: 8px; margin-bottom: 8px; background: var(--bg-body); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
-        /* Chat Container */
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; }
         .chat-container { width: 420px; height: 580px; background: var(--chat-bg); display: none; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         
@@ -39,7 +37,6 @@
         
         #typing-status { font-size: 10px; color: #ffd700; height: 12px; }
 
-        /* Transparent Chat Box & Input */
         #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: transparent; }
         
         .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
@@ -51,18 +48,18 @@
         .time-text { font-size: 9px; opacity: 0.6; }
         .tick-mark { font-size: 11px; color: #53bdeb; }
 
-        /* No More White Box */
+        /* নিচের সাদা কালারটা চেঞ্জ করা হয়েছে */
         .input-area { background: transparent; padding: 15px; display: flex; flex-direction: column; }
         .input-row { display: flex; gap: 8px; align-items: center; }
         
-        /* Input field is now dynamic with chat color */
+        /* টাইপ করার বক্সের ব্যাকগ্রাউন্ড স্বচ্ছ করা হয়েছে */
         input[type="text"] { 
             flex: 1; padding: 10px 15px; border-radius: 20px; 
-            border: 1px solid rgba(0,0,0,0.1); outline: none; 
-            background: rgba(255,255,255,0.7); /* হালকা স্বচ্ছ সাদা যেন সব কালারে মানিয়ে যায় */
+            border: 1px solid rgba(0,0,0,0.2); outline: none; 
+            background: rgba(255,255,255,0.4); color: #000;
         }
         
-        .bg-picker { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid white; padding: 0; background: #000; overflow: hidden; }
+        .bg-picker { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; padding: 0; background: #000; overflow: hidden; }
 
         .room-form { padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
         .room-form input { background: var(--bg-body); border: none; color: var(--txt-main); padding: 8px; border-radius: 5px; }
@@ -76,8 +73,8 @@
         <div class="room-list" id="room-list"></div>
         <div class="room-form">
             <input type="text" id="new-room-id" placeholder="Room ID">
-            <input type="text" id="new-room-name" placeholder="Name">
-            <button onclick="createRoom()" style="background:#00a884; color:white; border:none; padding:8px; cursor:pointer; font-weight:bold; border-radius:5px;">Create</button>
+            <input type="text" id="new-room-name" placeholder="Friend's Name">
+            <button onclick="createRoom()" style="background:#00a884; color:white; border:none; padding:8px; cursor:pointer; font-weight:bold; border-radius:5px;">Create Room</button>
         </div>
     </div>
 
@@ -98,13 +95,13 @@
             
             <div id="chat-box"></div>
 
-            <div class="input-area" id="input-container">
-                <div id="reply-box" style="background:rgba(0,0,0,0.05); padding:5px 10px; border-left:4px solid #075e54; font-size:12px; display:none; justify-content:space-between; border-radius:5px; margin-bottom:5px;">
+            <div class="input-area">
+                <div id="reply-box" style="background:rgba(0,0,0,0.1); padding:5px 10px; border-left:4px solid #075e54; font-size:12px; display:none; justify-content:space-between; border-radius:5px; margin-bottom:5px;">
                     <span id="reply-text"></span>
                     <span onclick="cancelReply()" style="cursor:pointer; font-weight:bold;">×</span>
                 </div>
                 <div class="input-row">
-                    <input type="color" class="bg-picker" id="bg-color" value="#efe7dd" oninput="changeBg(this.value)" title="Change Color">
+                    <input type="color" class="bg-picker" id="bg-color" value="#efe7dd" oninput="changeBg(this.value)" title="Change Chat Color">
                     <input type="text" id="msg-input" placeholder="Type a message..." oninput="handleTyping()" onkeypress="if(event.key === 'Enter') sendMsg()">
                     <button onclick="sendMsg()" style="background:none; border:none; font-size:24px; cursor:pointer;">➤</button>
                 </div>
