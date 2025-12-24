@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>San Chat - Pro Max V7</title>
+    <title>San Chat - Pro Max V8</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
@@ -46,6 +46,8 @@
         .reaction-badge { position: absolute; bottom: -8px; right: 8px; background: white; border-radius: 10px; padding: 1px 4px; font-size: 12px; }
         .del-btn { color: red; margin-left: 8px; display: none; font-size: 12px; cursor: pointer; }
         .my-msg:hover .del-btn { display: inline; }
+        .seen-tick { color: #34b7f1; font-weight: bold; }
+        .unseen-tick { color: #888; }
 
         .input-area { background: rgba(0,0,0,0.05); padding: 15px; }
         .input-row { display: flex; gap: 10px; align-items: center; }
@@ -57,6 +59,8 @@
     </style>
 </head>
 <body>
+
+    <audio id="msg-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -112,7 +116,7 @@
         const db = firebase.firestore();
         let myId = localStorage.getItem('userId') || 'u' + Date.now();
         localStorage.setItem('userId', myId);
-        let currentRoomId = "", replyData = null, typingTimeout;
+        let currentRoomId = "", replyData = null, typingTimeout, lastMsgCount = 0;
 
         function updateStatus(s) { db.collection("users").doc(myId).set({ online: s }, { merge: true }); }
         updateStatus(true); window.onbeforeunload = () => updateStatus(false);
@@ -135,8 +139,7 @@
             if(id && name) {
                 db.collection("active_rooms").doc(id).set({ displayName: name, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
                     const link = window.location.origin + window.location.pathname + "?room=" + id;
-                    const copy = confirm("Room created!\n\nLink: " + link + "\n\nCopy to clipboard?");
-                    if(copy) navigator.clipboard.writeText(link).then(() => alert("Copied!"));
+                    if(confirm("Room created! Copy Link?")) navigator.clipboard.writeText(link);
                 });
             }
         }
@@ -152,6 +155,7 @@
         function openRoom(id, name) {
             currentRoomId = id; document.getElementById('main-chat').style.display = 'flex';
             document.getElementById('current-room-name').innerText = name;
+            lastMsgCount = 0;
             loadMsgs();
             db.collection("users").onSnapshot(snap => {
                 let on = false; snap.forEach(d => { if(d.id !== myId && d.data().online) on = true; });
@@ -166,7 +170,9 @@
         function sendMsg() {
             let t = document.getElementById('msg-input').value;
             if(t && currentRoomId) {
-                db.collection("chats").doc(currentRoomId).collection("messages").add({ text: t, senderId: myId, reaction: "", replyTo: replyData, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                db.collection("chats").doc(currentRoomId).collection("messages").add({ 
+                    text: t, senderId: myId, reaction: "", replyTo: replyData, seen: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                });
                 document.getElementById('msg-input').value = ""; cancelReply();
             }
         }
@@ -174,16 +180,34 @@
         function loadMsgs() {
             db.collection("chats").doc(currentRoomId).collection("messages").orderBy("createdAt").onSnapshot(snap => {
                 let box = document.getElementById('chat-box'); box.innerHTML = "";
+                
+                // Sound logic
+                if (lastMsgCount > 0 && snap.size > lastMsgCount) {
+                    let lastDoc = snap.docs[snap.size - 1].data();
+                    if (lastDoc.senderId !== myId) document.getElementById('msg-sound').play();
+                }
+                lastMsgCount = snap.size;
+
                 snap.forEach(doc => {
                     let d = doc.data(); let isMe = d.senderId === myId;
+                    
+                    // Mark as seen logic
+                    if (!isMe && d.seen === false) {
+                        db.collection("chats").doc(currentRoomId).collection("messages").doc(doc.id).update({ seen: true });
+                    }
+
                     let time = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+                    let seenStatus = isMe ? (d.seen ? '<span class="seen-tick">✓✓</span>' : '<span class="unseen-tick">✓✓</span>') : '';
+
                     box.innerHTML += `
                         <div class="msg-wrapper ${isMe?'my-msg':'other-msg'}">
                             <div class="msg-content" ondblclick="handleReaction('${doc.id}', '${d.reaction}')" onclick="setReply('${d.text}')">
                                 ${d.replyTo ? `<div class="reply-box">${d.replyTo}</div>` : ''}
                                 ${d.text}
                                 ${d.reaction ? `<span class="reaction-badge">${d.reaction}</span>` : ''}
-                                <div style="font-size:10px; opacity:0.6; text-align:right; color:#000; margin-top:4px;">${time} ✓✓ ${isMe ? `<span class="del-btn" onclick="event.stopPropagation(); if(confirm('Delete for everyone?')) db.collection('chats').doc(currentRoomId).collection('messages').doc('${doc.id}').delete()">🗑️</span>` : ''}</div>
+                                <div style="font-size:10px; opacity:0.6; text-align:right; color:#000; margin-top:4px;">
+                                    ${time} ${seenStatus} ${isMe ? `<span class="del-btn" onclick="event.stopPropagation(); if(confirm('Delete?')) db.collection('chats').doc(currentRoomId).collection('messages').doc('${doc.id}').delete()">🗑️</span>` : ''}
+                                </div>
                             </div>
                         </div>`;
                 });
