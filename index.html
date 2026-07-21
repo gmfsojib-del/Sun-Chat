@@ -2,168 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>San Chat - Final Pro</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <title>GMS Colour Pantone</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --bg-body: #0f171c; --bg-side: #111b21; --txt-main: #e9edef; --border: #374045; --chat-bg: #efe7dd; }
-        .light-mode { --bg-body: #f0f2f5; --bg-side: #ffffff; --txt-main: #111b21; --border: #ddd; --chat-bg: #e5ddd5; }
-        * { box-sizing: border-box; transition: all 0.3s ease; }
-        body { margin: 0; background: var(--bg-body); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; color: var(--txt-main); }
-
-        #sidebar { width: 300px; background: var(--bg-side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .room-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .room-item { padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 8px; background: #202c33; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: #e9edef; }
-
-        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-        .chat-container { width: 420px; height: 600px; background: var(--chat-bg); display: none; flex-direction: column; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
-
-        header { background: rgba(0,0,0,0.15); color: white; padding: 15px; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; }
-        .header-right { text-align: right; display: flex; gap: 12px; justify-content: flex-end; font-size: 18px; cursor: pointer; }
-        .online-dot { width: 10px; height: 10px; background: #00ff00; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #00ff00; }
-
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: transparent; scroll-behavior: smooth; }
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; position: relative; }
-        .my-msg { align-self: flex-end; } .other-msg { align-self: flex-start; }
-        .msg-content { padding: 10px 15px; border-radius: 12px; font-size: 14px; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; position: relative; }
-        .my-msg .msg-content { background: #dcf8c6; } .other-msg .msg-content { background: #ffffff; }
-
-        .reply-box { font-size: 11px; background: rgba(0,0,0,0.05); border-left: 3px solid #00a884; padding: 5px; margin-bottom: 5px; border-radius: 4px; color: #555; }
-        .reply-preview { background: #eee; padding: 10px; border-left: 5px solid #00a884; display: none; justify-content: space-between; color: #333; align-items: center; }
-        .reaction-badge { position: absolute; bottom: -8px; right: 8px; background: white; border-radius: 10px; padding: 1px 4px; font-size: 12px; }
-        .del-btn { color: red; margin-left: 8px; display: none; font-size: 12px; cursor: pointer; }
-        .my-msg:hover .del-btn { display: inline; }
-
-        /* Sticky Input for Fixed View */
-        .input-area { background: rgba(0,0,0,0.08); padding: 15px; border-top: 1px solid rgba(0,0,0,0.1); }
-        .input-row { display: flex; gap: 10px; align-items: center; }
-        input[type="text"] { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid rgba(0,0,0,0.1); outline: none; background: rgba(255,255,255,0.7); }
-        .bg-picker { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid white; }
-
-        .room-form { padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-        .room-form input { background: #202c33; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; flex-direction: column; }
+        #history-sidebar { width: 220px; background: #fff; height: 90vh; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: fixed; overflow-y: auto; }
+        .wrapper { display: flex; justify-content: center; padding-left: 240px; }
+        .main-card { width: 950px; display: flex; flex-direction: column; gap: 20px; }
+        .solid-box { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .controls { display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap; }
+        input { width: 70px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; text-align: center; }
+        input#hexInput { width: 140px; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        
+        /* প্যালেট এরিয়া যেন শুধু কালার বক্স দেখায় */
+        .capture-area { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 890px; margin: 0 auto; }
+        .color-box { width: 100px; height: 95px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; border: 1px solid #000; position: relative; cursor: pointer; }
+        .rgb-label { background: white; width: 100%; font-size: 10px; font-weight: bold; text-align: center; border-top: 1px solid #000; }
+        .copy-toast { position: absolute; top: 30%; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 5px; border-radius: 3px; font-size: 10px; display: none; }
+        .download-btn { display: flex; justify-content: center; margin-top: 15px; }
+        .history-item { width: 100%; height: 50px; border-radius: 4px; margin-bottom: 10px; cursor: pointer; border: 1px solid #ddd; }
+        .app-footer { text-align: center; padding: 20px; background: #2c3e50; color: #fff; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <audio id="msg-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+<div id="history-sidebar"><h3>History</h3><div id="history-list"></div></div>
 
-    <div id="sidebar">
-        <div class="sidebar-header">San Chat Rooms <span onclick="document.body.classList.toggle('light-mode')" style="cursor:pointer; font-size:20px;">🌓</span></div>
-        <div class="room-list" id="room-list"></div>
-        <div class="room-form">
-            <input type="text" id="new-room-id" placeholder="Room ID">
-            <input type="text" id="new-room-name" placeholder="Friend's Name">
-            <button onclick="createRoom()" style="background:#00a884; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold; border-radius:8px;">Create Private Room</button>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="chat-container" id="main-chat">
-            <header>
-                <div class="header-left">
-                    <div style="display:flex; align-items:center;">
-                        <span id="online-indicator"></span>
-                        <div id="current-room-name" style="font-weight:bold; font-size:14px;">...</div>
-                    </div>
-                    <div id="typing-status" style="font-size:10px; color:#00ff00; height:12px;"></div>
-                </div>
-                <div style="text-align:center; font-weight:bold;">San Chat</div>
-                <div class="header-right"><span onclick="minimizeChat()">−</span><span onclick="popOut()">❐</span><span onclick="closeChat()">×</span></div>
-            </header>
-            <div id="chat-box"></div>
-            <div class="reply-preview" id="reply-area"><span id="reply-text">Replying...</span><span onclick="cancelReply()" style="cursor:pointer; font-weight:bold;">×</span></div>
-            <div class="input-area">
-                <div class="input-row">
-                    <input type="color" class="bg-picker" id="bg-color" value="#efe7dd" oninput="document.getElementById('main-chat').style.backgroundColor = this.value">
-                    <input type="text" id="msg-input" placeholder="Write something..." oninput="handleTyping()" onkeypress="if(event.key === 'Enter') sendMsg()">
-                    <button onclick="sendMsg()" style="background:none; border:none; font-size:28px; cursor:pointer;">➤</button>
-                </div>
+<div class="wrapper">
+    <div class="main-card">
+        <div class="solid-box">
+            <h1>GMS Colour Pantone</h1>
+            <div class="controls">
+                <input type="text" id="hexInput" placeholder="Hex (#0078FF)">
+                <input type="number" id="rInput" placeholder="R">
+                <input type="number" id="gInput" placeholder="G">
+                <input type="number" id="bInput" placeholder="B">
+                <button onclick="handleGenerate()">Generate</button>
             </div>
         </div>
+        <div id="all-boxes"></div>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyASJOEAvLPxkOXSV2lR9N0aLAYtXGZPZ98", authDomain: "sun-message.firebaseapp.com", projectId: "sun-message", appId: "1:156320327886:web:54f780dea6dbce43d0489f" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        let myId = localStorage.getItem('userId') || 'u' + Date.now();
-        localStorage.setItem('userId', myId);
-        let currentRoomId = "", replyData = null, typingTimeout, lastMsgCount = 0;
+<footer class="app-footer"><h3>Developed & Styled with ❤️ by GM Sojib</h3></footer>
 
-        function updateStatus(s) { db.collection("users").doc(myId).set({ online: s }, { merge: true }); }
-        updateStatus(true); window.onbeforeunload = () => updateStatus(false);
+<script>
+    let historyArray = JSON.parse(localStorage.getItem('colorHistory')) || [];
+    const configs = [
+        {id: 'light', title: 'Light Palette', mod: (c, f) => ({r: c.r+(255-c.r)*f, g: c.g+(255-c.g)*f, b: c.b+(255-c.b)*f})},
+        {id: 'dark', title: 'Dark Palette', mod: (c, f) => ({r: c.r*(1-f), g: c.g*(1-f), b: c.b*(1-f)})},
+        {id: 'sat5', title: '+5% Saturation', mod: (c, f) => ({r: c.r*1.05+(255-c.r)*f, g: c.g*1.05+(255-c.g)*f, b: c.b*1.05+(255-c.b)*f})},
+        {id: 'sat10', title: '+10% Saturation', mod: (c, f) => ({r: c.r*1.1+(255-c.r)*f, g: c.g*1.1+(255-c.g)*f, b: c.b*1.1+(255-c.b)*f})},
+        {id: 'black', title: '+10% Black', mod: (c, f) => ({r: Math.max(0, c.r-25)*(1-f), g: Math.max(0, c.g-25)*(1-f), b: Math.max(0, c.b-25)*(1-f)})},
+        {id: 'yel', title: '+5% Yellow', mod: (c, f) => ({r: (c.r+15)*(1-f), g: (c.g+15)*(1-f), b: c.b*(1-f)})},
+        {id: 'red', title: '+5% Red', mod: (c, f) => ({r: (c.r+15)*(1-f), g: c.g*(1-f), b: c.b*(1-f)})},
+        {id: 'grn', title: '+5% Green', mod: (c, f) => ({r: c.r*(1-f), g: Math.min(255, c.g+15)*(1-f), b: c.b*(1-f)})},
+        {id: 'mag', title: '+5% Magenta', mod: (c, f) => ({r: (c.r+15)*(1-f), g: c.g*(1-f), b: (c.b+15)*(1-f)})}
+    ];
 
-        window.onload = () => {
-            const r = new URLSearchParams(window.location.search).get('room');
-            if(r) { 
-                const s = document.getElementById('sidebar'); if(s) s.remove(); // Privacy Fix
-                openRoom(r, "Private Chat");
-            }
-        };
-
-        function createRoom() {
-            const id = document.getElementById('new-room-id').value.trim();
-            const name = document.getElementById('new-room-name').value.trim();
-            if(id && name) db.collection("active_rooms").doc(id).set({ displayName: name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        }
-
-        db.collection("active_rooms").orderBy("createdAt", "desc").onSnapshot(snap => {
-            const list = document.getElementById('room-list'); if(!list) return;
-            list.innerHTML = "";
-            snap.forEach(doc => {
-                const url = window.location.origin + window.location.pathname + "?room=" + doc.id;
-                list.innerHTML += `<div class="room-item"><b onclick="openRoom('${doc.id}', '${doc.data().displayName}')" style="flex:1;">${doc.data().displayName}</b><div style="display:flex; gap:10px;"><span onclick="navigator.clipboard.writeText('${url}'); alert('Copied!')">🔗</span><span onclick="if(confirm('Delete?')) db.collection('active_rooms').doc('${doc.id}').delete()">🗑️</span></div></div>`;
-            });
+    window.onload = () => {
+        configs.forEach(conf => {
+            let box = document.createElement('div');
+            box.className = 'solid-box'; box.id = 'box-' + conf.id;
+            // শুধু প্যালেট কন্টেইনারটিকে আইডি দিচ্ছি ডাউনলোডের জন্য
+            box.innerHTML = `<h3>${conf.title}</h3><div id="cont-${conf.id}" class="capture-area"></div><div class="download-btn"><button onclick="downloadArea('cont-${conf.id}')">Download</button></div>`;
+            document.getElementById('all-boxes').appendChild(box);
         });
+        renderHistory();
+    };
 
-        function openRoom(id, name) {
-            currentRoomId = id; document.getElementById('main-chat').style.display = 'flex';
-            document.getElementById('current-room-name').innerText = name;
-            loadMsgs();
-            db.collection("users").onSnapshot(snap => {
-                let on = false; snap.forEach(d => { if(d.id !== myId && d.data().online) on = true; });
-                document.getElementById('online-indicator').className = on ? "online-dot" : "";
-            });
-            db.collection("chats").doc(currentRoomId).collection("typing").onSnapshot(snap => {
-                let typ = false; snap.forEach(d => { if(d.id !== myId && d.data().isTyping) typ = true; });
-                document.getElementById('typing-status').innerText = typ ? "Friend is typing..." : "";
-            });
-        }
+    function rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1).toUpperCase();
+    }
 
-        function sendMsg() {
-            let t = document.getElementById('msg-input').value;
-            if(t && currentRoomId) {
-                db.collection("chats").doc(currentRoomId).collection("messages").add({ text: t, senderId: myId, reaction: "", replyTo: replyData, seen: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                document.getElementById('msg-input').value = ""; cancelReply();
+    function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        return {r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16)};
+    }
+
+    function handleGenerate() {
+        let hex = document.getElementById('hexInput').value;
+        let r = parseInt(document.getElementById('rInput').value);
+        let g = parseInt(document.getElementById('gInput').value);
+        let b = parseInt(document.getElementById('bInput').value);
+        
+        let c;
+        if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+            c = {r, g, b};
+            hex = rgbToHex(r, g, b);
+        } else if (hex) {
+            c = hexToRgb(hex);
+        } else return;
+        
+        process(c);
+        if(!historyArray.includes(hex)) { historyArray.push(hex); localStorage.setItem('colorHistory', JSON.stringify(historyArray)); renderHistory(); }
+    }
+
+    function process(c) {
+        configs.forEach(conf => {
+            let cont = document.getElementById('cont-' + conf.id);
+            cont.innerHTML = '';
+            for(let i=0; i<40; i++) {
+                let f = i/39;
+                let col = conf.mod(c, f);
+                let hexVal = rgbToHex(col.r, col.g, col.b);
+                const box = document.createElement('div');
+                box.className = 'color-box';
+                box.style.backgroundColor = `rgb(${col.r}, ${col.g}, ${col.b})`;
+                box.innerHTML = `<div class="copy-toast">Copied!</div><div class="rgb-label">${Math.round(col.r)}, ${Math.round(col.g)}, ${Math.round(col.b)}</div>`;
+                box.ondblclick = () => {
+                    navigator.clipboard.writeText(hexVal).then(() => {
+                        box.querySelector('.copy-toast').style.display = 'block';
+                        setTimeout(() => box.querySelector('.copy-toast').style.display = 'none', 1000);
+                    });
+                };
+                cont.appendChild(box);
             }
-        }
+        });
+    }
 
-        function loadMsgs() {
-            db.collection("chats").doc(currentRoomId).collection("messages").orderBy("createdAt").onSnapshot(snap => {
-                let box = document.getElementById('chat-box'); box.innerHTML = "";
-                if (lastMsgCount > 0 && snap.size > lastMsgCount && snap.docs[snap.size-1].data().senderId !== myId) document.getElementById('msg-sound').play();
-                lastMsgCount = snap.size;
-                snap.forEach(doc => {
-                    let d = doc.data(); let isMe = d.senderId === myId;
-                    if (!isMe && d.seen === false) db.collection("chats").doc(currentRoomId).collection("messages").doc(doc.id).update({ seen: true });
-                    let time = d.createdAt ? new Date(d.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
-                    let seenStatus = isMe ? (d.seen ? '<span style="color:#34b7f1">✓✓</span>' : '<span style="color:#888">✓✓</span>') : '';
-                    box.innerHTML += `<div class="msg-wrapper ${isMe?'my-msg':'other-msg'}"><div class="msg-content" ondblclick="handleReaction('${doc.id}', '${d.reaction}')" onclick="setReply('${d.text}')">${d.replyTo ? `<div class="reply-box">${d.replyTo}</div>` : ''}${d.text}${d.reaction ? `<span class="reaction-badge">${d.reaction}</span>` : ''}<div style="font-size:10px; opacity:0.6; text-align:right; color:#000; margin-top:4px;">${time} ${seenStatus} ${isMe ? `<span class="del-btn" onclick="event.stopPropagation(); if(confirm('Delete?')) db.collection('chats').doc(currentRoomId).collection('messages').doc('${doc.id}').delete()">🗑️</span>` : ''}</div></div></div>`;
-                });
-                box.scrollTop = box.scrollHeight;
-            });
-        }
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        historyArray.forEach(hex => {
+            let item = document.createElement('div');
+            item.className = 'history-item'; item.style.backgroundColor = hex;
+            item.onclick = () => process(hexToRgb(hex));
+            list.prepend(item);
+        });
+    }
 
-        function handleTyping() { if(!currentRoomId) return; db.collection("chats").doc(currentRoomId).collection("typing").doc(myId).set({ isTyping: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { db.collection("chats").doc(currentRoomId).collection("typing").doc(myId).set({ isTyping: false }); }, 2000); }
-        function setReply(t) { replyData = t.substring(0,40); document.getElementById('reply-area').style.display='flex'; document.getElementById('reply-text').innerText="Reply: "+replyData; }
-        function cancelReply() { replyData = null; document.getElementById('reply-area').style.display='none'; }
-        function handleReaction(id, r) { const e = prompt("Emoji:", r || ""); db.collection("chats").doc(currentRoomId).collection("messages").doc(id).update({ reaction: e || "" }); }
-        function minimizeChat() { let c = document.getElementById('main-chat'); c.style.height = (c.style.height === '350px') ? '600px' : '350px'; c.style.width = (c.style.width === '350px') ? '420px' : '350px'; setTimeout(() => { let b = document.getElementById('chat-box'); b.scrollTop = b.scrollHeight; }, 200); }
-        function closeChat() { document.getElementById('main-chat').style.display = 'none'; }
-        function popOut() { window.open(window.location.origin + window.location.pathname + "?room=" + currentRoomId, 'ChatWin', 'width=420,height=600'); }
-    </script>
+    function downloadArea(id) { 
+        // বাটন বা অন্য কিছু ছাড়া শুধু প্যালেট কন্টেইনারটি ক্যাপচার করছি
+        html2canvas(document.getElementById(id), {scale: 3}).then(canvas => { 
+            const link = document.createElement('a'); 
+            link.download = 'Palette.png'; 
+            link.href = canvas.toDataURL('image/png', 1.0); 
+            link.click(); 
+        }); 
+    }
+</script>
 </body>
 </html>
